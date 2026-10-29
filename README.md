@@ -74,6 +74,24 @@ docker compose --env-file .env up -d --build
 
 ### Мониторинг, логирование, трассировка: Langfuse
 
+Для хранения событий, медиафайлов и экспортов Langfuse используется
+[SeaweedFS](https://github.com/seaweedfs/seaweedfs) с S3 API. Compose автоматически
+создаёт bucket `langfuse`; данные сохраняются в томе `langfuse-seaweedfs-data`.
+Ключи `SEAWEEDFS_ACCESS_KEY` и `SEAWEEDFS_SECRET_KEY` в `.env` используются
+и SeaweedFS, и Langfuse. Внутри Docker хранилище доступно по
+`http://seaweedfs:8333`, а для браузера и SDK на локальном компьютере — по
+`http://localhost:8333` (порт задаётся через `SEAWEEDFS_PORT`). При доступе с другого компьютера задайте в `.env`
+`LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT` и `LANGFUSE_S3_BATCH_EXPORT_EXTERNAL_ENDPOINT`
+с доступным клиентам адресом и опубликуйте S3 API через ваш прокси.
+
+При обновлении старой конфигурации замените `MINIO_ROOT_PASSWORD` и три
+`LANGFUSE_S3_*_SECRET_ACCESS_KEY` на общие ключи `SEAWEEDFS_ACCESS_KEY` и
+`SEAWEEDFS_SECRET_KEY` из `.env.example`. Если в `.env` заданы S3 endpoints с
+`minio:9000`, удалите эти переопределения, чтобы использовать новые значения
+Compose. Перезапустите сервисы обычной командой запуска из раздела выше.
+SeaweedFS использует новый том; данные из прежнего MinIO автоматически не
+переносятся. Старый том MinIO можно сохранить для отдельной миграции данных.
+
 1. Зайти на http://localhost:3000/
 2. Получить `LANGFUSE_SECRET_KEY` и `LANGFUSE_PUBLIC_KEY` – указать в `.env`
 3. Перезапустить контейнеры
